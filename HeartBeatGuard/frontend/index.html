@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-theme">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeartBeatGuard | AI-Powered Cardiac Emergency Response System</title>
+    <meta name="description" content="Enterprise-grade health monitoring platform that detects cardiac abnormalities in real-time and automates emergency response with hospital integration.">
+    <meta name="keywords" content="cardiac monitoring, emergency response AI, hospital integration, smartwatch health, real-time analytics, medical IoT">
+    <meta name="author" content="HeartBeatGuard">
+    <meta property="og:title" content="HeartBeatGuard - AI Cardiac Response Platform">
+    <meta property="og:description" content="Real-time cardiac monitoring with automated emergency protocols">
+    <meta property="og:type" content="website">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- ADD THIS LINE - Socket.io for WebSocket connection -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+                :root {
+            /* Primary Colors */
+            --primary-50: #e6f0ff;
+            --primary-100: #cce0ff;
+            --primary-200: #99c2ff;
+            --primary-300: #66a3ff;
+            --primary-400: #3385ff;
+            --primary-500: #0066ff;
+            --primary-600: #0052cc;
+            --primary-700: #003d99;
+            --primary-800: #002966;
+            --primary-900: #001433;
+            
+            /* Semantic Colors */
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --critical: #dc2626;
+            
+            /* Neutral Colors */
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            
+            /* Backgrounds */
+            --bg-primary: #0a0f1e;
+            --bg-secondary: #151b2d;
+            --bg-tertiary: #1e253a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-glow: 0 0 40px rgba(0, 102, 255, 0.15);
+            
+            /* Typography */
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+            
+            /* Spacing */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+            --space-3xl: 4rem;
+            
+            /* Borders */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-2xl: 24px;
+            --radius-full: 9999px;
+            
+            /* Transitions */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--bg-primary);
+            color: var(--gray-100);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 102, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Typography Scale */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+
+        .display-1 {
+            font-size: 4.5rem;
+            line-height: 1.1;
+            background: linear-gradient(135deg, var(--primary-300) 0%, var(--primary-500) 50%, var(--primary-700) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .display-2 {
+            font-size: 3.5rem;
+            line-height: 1.2;
+        }
+
+        h1 {
+            font-size: 3rem;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+        }
+
+        h3 {
+            font-size: 2rem;
+        }
+
+        h4 {
+            font-size: 1.5rem;
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, var(--primary-300), var(--primary-500));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Layout */
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 var(--space-lg);
+        }
+
+        .section {
+            padding: var(--space-3xl) 0;
+            position: relative;
+        }
+
+        /* Header & Navigation */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(10, 15, 30, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: var(--space-md) 0;
+            transition: var(--transition-base);
+        }
+
+        .header.scrolled {
+            padding: var(--space-sm) 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-weight: 800;
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: var(--space-xl);
+            list-style: none;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--gray-300);
+            font-weight: 500;
+            position: relative;
+            padding: var(--space-sm) 0;
+            transition: var(--transition-fast);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-500), var(--primary-300));
+            transition: var(--transition-base);
+        }
+
+        .nav-link:hover {
+            color: white;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            padding: var(--space-md) var(--space-xl);
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all var(--transition-base);
+            border: none;
+            cursor: pointer;
+            font-family: var(--font-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: var(--transition-base);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+            color: white;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl), var(--shadow-glow);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--gray-100);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), var(--critical));
+            color: white;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition-base);
+            height: 100%;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .card-glass {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding-top: 8rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-3xl);
+            align-items: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            background: rgba(0, 102, 255, 0.1);
+            padding: var(--space-sm) var(--space-lg);
+            border-radius: var(--radius-full);
+            margin-bottom: var(--space-xl);
+            border: 1px solid rgba(0, 102, 255, 0.2);
+        }
+
+        .hero-visual {
+            position: relative;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-500);
+            animation: pulse 2s infinite;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* Dashboard */
+        .dashboard {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-2xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .dashboard-header {
+            padding: var(--space-xl);
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-xl);
+            padding: var(--space-xl);
+        }
+
+        /* Vital Stats */
+        .vital-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .vital-card {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            text-align: center;
+            transition: var(--transition-base);
+        }
+
+        .vital-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .vital-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: var(--space-sm) 0;
+            font-family: var(--font-mono);
+        }
+
+        .heart-rate-value {
+            color: var(--danger);
+            position: relative;
+        }
+
+        .heart-rate-value::after {
+            content: '❤️';
+            position: absolute;
+            right: -30px;
+            animation: heartbeat 1s infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Severity Levels */
+        .severity-levels {
+            display: flex;
+            gap: var(--space-md);
+            margin: var(--space-xl) 0;
+        }
+
+        .severity-pill {
+            padding: var(--space-sm) var(--space-lg);
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            transition: var(--transition-base);
+            cursor: pointer;
+        }
+
+        .severity-pill.active {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        .severity-minor {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .severity-moderate {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .severity-critical {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* Process Flow */
+        .process-flow {
+            position: relative;
+            padding: var(--space-2xl) 0;
+        }
+
+        .process-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-500), transparent);
+            z-index: 0;
+        }
+
+        .process-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .process-step {
+            text-align: center;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: var(--bg-tertiary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin: 0 auto var(--space-lg);
+            border: 2px solid var(--primary-500);
+            color: var(--primary-300);
+        }
+
+        /* Emergency Protocol */
+        .emergency-protocol {
+            background: linear-gradient(135deg, var(--gray-900), var(--bg-primary));
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            margin: var(--space-xl) 0;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .protocol-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-lg);
+            margin-top: var(--space-xl);
+        }
+
+        .protocol-step {
+            background: rgba(239, 68, 68, 0.05);
+            padding: var(--space-lg);
+            border-radius: var(--radius-lg);
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Analytics */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-xl);
+            margin: var(--space-xl) 0;
+        }
+
+        .chart-container {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            position: relative;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .display-1 {
+                font-size: 3.5rem;
+            }
+            
+            .hero-grid,
+            .dashboard-grid,
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .process-steps {
+                flex-direction: column;
+                gap: var(--space-xl);
+            }
+            
+            .process-line {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .vital-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .display-1 {
+                font-size: 2.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-600);
+            border-radius: var(--radius-full);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-500);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-heart-pulse"></i>
+                </div>
+                <span>HeartBeat<span class="text-gradient">Guard</span></span>
+            </a>
+            
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#platform" class="nav-link">Platform</a></li>
+                    <li><a href="#technology" class="nav-link">Technology</a></li>
+                    <li><a href="#dashboard" class="nav-link">Dashboard</a></li>
+                    <li><a href="#protocols" class="nav-link">Protocols</a></li>
+                    <li><a href="#enterprise" class="nav-link">Enterprise</a></li>
+                </ul>
+            </nav>
+            
+            <div class="nav-actions">
+                <a href="#demo" class="btn btn-secondary">View Demo</a>
+                <a href="#contact" class="btn btn-primary">Schedule Demo</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero section" id="hero">
+        <div class="container">
+            <div class="hero-grid animate-fade-in-up">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <span class="fas fa-shield-alt"></span>
+                        <span>Enterprise Cardiac Response Platform</span>
+                    </div>
+                    
+                    <h1 class="display-1">
+                        Real-time Cardiac<br>
+                        <span class="text-gradient">Emergency Response</span>
+                    </h1>
+                    
+                    <p class="lead" style="font-size: 1.25rem; color: var(--gray-300); margin: var(--space-xl) 0;">
+                        AI-powered platform that detects cardiac abnormalities through wearable devices and automates emergency response protocols with hospital EMR integration.
+                    </p>
+                    
+                    <div style="display: flex; gap: var(--space-md); margin-top: var(--space-2xl);">
+                        <a href="#dashboard" class="btn btn-primary" style="padding: var(--space-lg) var(--space-2xl);">
+                            <span class="fas fa-play-circle"></span>
+                            Live Demo
+                        </a>
+                        <a href="#enterprise" class="btn btn-secondary" style="padding: var(--space-lg) var(--space-2xl);">
+                            <span class="fas fa-building"></span>
+                            Enterprise Solutions
+                        </a>
+                    </div>
+                    
+                    <div style="display: flex; gap: var(--space-2xl); margin-top: var(--space-2xl);">
+                        <div>
+                            <h4 style="color: var(--primary-300);">99.9%</h4>
+                            <p style="color: var(--gray-400);">Detection Accuracy</p>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--primary-300);">&lt;2s</h4>
+                            <p style="color: var(--gray-400);">Response Time</p>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--primary-300);">500+</h4>
+                            <p style="color: var(--gray-400);">Hospital Networks</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="hero-visual">
+                    <div class="pulse-ring"></div>
+                    <div class="card-glass" style="position: relative; z-index: 2;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-lg);">
+                            <h3 style="color: white;">Live Cardiac Monitor</h3>
+                            <div class="severity-pill severity-minor" id="heroSeverity">
+                                <span class="fas fa-check-circle"></span>
+                                <span>Stable</span>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; padding: var(--space-xl) 0;">
+                            <div class="heart-rate-value" style="font-size: 4rem; margin-bottom: var(--space-sm);" id="heroHeartRate">72</div>
+                            <p style="color: var(--gray-400);">BPM • Normal Sinus Rhythm</p>
+                        </div>
+                        
+                        <div style="height: 150px; margin: var(--space-lg) 0;">
+                            <canvas id="liveEcgChart"></canvas>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);">
+                            <div style="text-align: center;">
+                                <div style="color: var(--gray-400); font-size: 0.875rem;">HRV</div>
+                                <div style="font-weight: 600; color: white;">42ms</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="color: var(--gray-400); font-size: 0.875rem;">O₂ Sat</div>
+                                <div style="font-weight: 600; color: white;">98%</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="color: var(--gray-400); font-size: 0.875rem;">Last Sync</div>
+                                <div style="font-weight: 600; color: white;">Just now</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platform Overview -->
+    <section class="section" id="platform" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: var(--space-3xl);">
+                <h2 class="display-2">How It Works</h2>
+                <p style="color: var(--gray-400); max-width: 600px; margin: var(--space-lg) auto;">
+                    End-to-end cardiac monitoring with automated emergency response protocols
+                </p>
+            </div>
+            
+            <div class="process-flow">
+                <div class="process-line"></div>
+                <div class="process-steps">
+                    <div class="process-step">
+                        <div class="step-number">1</div>
+                        <h4 style="color: white;">Continuous Monitoring</h4>
+                        <p style="color: var(--gray-400); margin-top: var(--space-sm);">
+                            Smartwatch collects heart rate data 24/7
+                        </p>
+                    </div>
+                    
+                    <div class="process-step">
+                        <div class="step-number">2</div>
+                        <h4 style="color: white;">AI Analysis</h4>
+                        <p style="color: var(--gray-400); margin-top: var(--space-sm);">
+                            Real-time anomaly detection using ML algorithms
+                        </p>
+                    </div>
+                    
+                    <div class="process-step">
+                        <div class="step-number">3</div>
+                        <h4 style="color: white;">Context Assessment</h4>
+                        <p style="color: var(--gray-400); margin-top: var(--space-sm);">
+                            User input & environmental factors considered
+                        </p>
+                    </div>
+                    
+                    <div class="process-step">
+                        <div class="step-number">4</div>
+                        <h4 style="color: white;">Severity Classification</h4>
+                        <p style="color: var(--gray-400); margin-top: var(--space-sm);">
+                            Java-based logic determines response level
+                        </p>
+                    </div>
+                    
+                    <div class="process-step">
+                        <div class="step-number">5</div>
+                        <h4 style="color: white;">Automated Response</h4>
+                        <p style="color: var(--gray-400); margin-top: var(--space-sm);">
+                            Appropriate emergency protocol activated
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Dashboard -->
+    <section class="section" id="dashboard">
+        <div class="container">
+            <div style="margin-bottom: var(--space-3xl);">
+                <h2 class="display-2">Interactive<br><span class="text-gradient">Dashboard</span></h2>
+                <p style="color: var(--gray-400); max-width: 600px; margin-top: var(--space-lg);">
+                    Real-time simulation of our cardiac monitoring and emergency response system
+                </p>
+            </div>
+            
+            <div class="dashboard">
+                <div class="dashboard-header">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="color: white;">Cardiac Response Simulator</h3>
+                            <p style="color: var(--gray-400);">Simulate different cardiac scenarios to see the system response</p>
+                        </div>
+                        <div class="severity-pill severity-minor active" id="currentSeverity">
+                            <span class="fas fa-heart"></span>
+                            <span>Status: Normal</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-grid">
+                    <div>
+                        <!-- Vital Statistics -->
+                        <div class="vital-stats">
+                            <div class="vital-card">
+                                <div style="color: var(--gray-400);">Heart Rate</div>
+                                <div class="vital-value heart-rate-value" id="simHeartRate">72</div>
+                                <div style="color: var(--gray-400); font-size: 0.875rem;">BPM</div>
+                            </div>
+                            
+                            <div class="vital-card">
+                                <div style="color: var(--gray-400);">Blood Pressure</div>
+                                <div class="vital-value" style="color: white;" id="simBP">120/80</div>
+                                <div style="color: var(--gray-400); font-size: 0.875rem;">mmHg</div>
+                            </div>
+                            
+                            <div class="vital-card">
+                                <div style="color: var(--gray-400);">Oxygen Saturation</div>
+                                <div class="vital-value" style="color: var(--success);" id="simOxygen">98%</div>
+                                <div style="color: var(--gray-400); font-size: 0.875rem;">SpO₂</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Heart Rate Control -->
+                        <div class="card" style="margin-bottom: var(--space-xl);">
+                            <h4 style="color: white; margin-bottom: var(--space-lg);">Heart Rate Simulator</h4>
+                            <div style="margin-bottom: var(--space-xl);">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+                                    <span style="color: var(--gray-400);">Set Heart Rate</span>
+                                    <span style="color: white; font-weight: 600;" id="hrValueDisplay">72 BPM</span>
+                                </div>
+                                <input type="range" min="40" max="180" value="72" class="slider" id="heartRateSlider" 
+                                       style="width: 100%; height: 8px; background: var(--bg-tertiary); border-radius: var(--radius-full); outline: none;">
+                                <div style="display: flex; justify-content: space-between; margin-top: var(--space-sm);">
+                                    <span style="color: var(--gray-400); font-size: 0.875rem;">40 BPM</span>
+                                    <span style="color: var(--gray-400); font-size: 0.875rem;">180 BPM</span>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: var(--space-xl);">
+                                <div style="color: var(--gray-400); margin-bottom: var(--space-sm);">Quick Scenarios</div>
+                                <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+                                    <button class="btn btn-secondary" data-hr="65" style="padding: var(--space-sm) var(--space-md);">
+                                        Normal Resting
+                                    </button>
+                                    <button class="btn btn-secondary" data-hr="95" style="padding: var(--space-sm) var(--space-md);">
+                                        After Exercise
+                                    </button>
+                                    <button class="btn btn-warning" data-hr="120" style="padding: var(--space-sm) var(--space-md); background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+                                        Tachycardia
+                                    </button>
+                                    <button class="btn btn-danger" data-hr="160" style="padding: var(--space-sm) var(--space-md);">
+                                        Critical
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <button id="simulateBtn" class="btn btn-primary" style="width: 100%; padding: var(--space-lg);">
+                                <span class="fas fa-play"></span>
+                                Run Cardiac Analysis
+                            </button>
+                        </div>
+                        
+                        <!-- System Response -->
+                        <div class="card">
+                            <h4 style="color: white; margin-bottom: var(--space-lg);">System Response</h4>
+                            <div id="responseContainer">
+                                <div style="text-align: center; padding: var(--space-xl); color: var(--gray-400);">
+                                    <span class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: var(--space-lg); display: block;"></span>
+                                    <p>Adjust heart rate and click "Run Cardiac Analysis" to see the system response</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Emergency Protocol Panel -->
+                    <div>
+                        <div class="card" style="height: 100%;">
+                            <h4 style="color: white; margin-bottom: var(--space-lg);">
+                                <span class="fas fa-syringe" style="color: var(--danger); margin-right: var(--space-sm);"></span>
+                                Emergency Protocols
+                            </h4>
+                            
+                            <div class="protocol-steps">
+                                <div class="protocol-step" id="protocolMinor" style="display: none;">
+                                    <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                                        <div class="severity-pill severity-minor" style="padding: var(--space-xs) var(--space-sm);">
+                                            Minor
+                                        </div>
+                                    </div>
+                                    <h5 style="color: white;">Self-Care Protocol</h5>
+                                    <ul style="color: var(--gray-300); margin-top: var(--space-sm); padding-left: var(--space-lg);">
+                                        <li>Advice: Rest & Hydrate</li>
+                                        <li>Continue monitoring</li>
+                                        <li>Log symptoms if persistent</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="protocol-step" id="protocolModerate" style="display: none;">
+                                    <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                                        <div class="severity-pill severity-moderate" style="padding: var(--space-xs) var(--space-sm);">
+                                            Moderate
+                                        </div>
+                                    </div>
+                                    <h5 style="color: white;">Medical Consultation</h5>
+                                    <ul style="color: var(--gray-300); margin-top: var(--space-sm); padding-left: var(--space-lg);">
+                                        <li>Suggest doctor visit</li>
+                                        <li>Share data with physician</li>
+                                        <li>Schedule follow-up</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="protocol-step" id="protocolCritical" style="display: none;">
+                                    <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+                                        <div class="severity-pill severity-critical" style="padding: var(--space-xs) var(--space-sm);">
+                                            Critical
+                                        </div>
+                                    </div>
+                                    <h5 style="color: white;">Emergency Response</h5>
+                                    <ul style="color: var(--gray-300); margin-top: var(--space-sm); padding-left: var(--space-lg);">
+                                        <li>Get GPS location</li>
+                                        <li>Find nearby hospitals</li>
+                                        <li>Auto-call emergency (108)</li>
+                                        <li>Alert emergency contacts</li>
+                                        <li>Share medical history</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <!-- Live Activity Log -->
+                            <div style="margin-top: var(--space-2xl);">
+                                <h5 style="color: white; margin-bottom: var(--space-lg);">
+                                    <span class="fas fa-history" style="margin-right: var(--space-sm);"></span>
+                                    Activity Log
+                                </h5>
+                                <div id="activityLog" style="background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--space-md); max-height: 300px; overflow-y: auto;">
+                                    <div style="color: var(--gray-400); font-size: 0.875rem; padding: var(--space-sm); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                        <span style="color: var(--primary-300);">[12:30:45]</span> System initialized
+                                    </div>
+                                    <div style="color: var(--gray-400); font-size: 0.875rem; padding: var(--space-sm); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                        <span style="color: var(--primary-300);">[12:30:50]</span> Connected to simulated wearable
+                                    </div>
+                                    <div style="color: var(--gray-400); font-size: 0.875rem; padding: var(--space-sm);">
+                                        <span style="color: var(--primary-300);">[12:31:00]</span> Ready for simulation
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Stack -->
+    <section class="section" id="technology" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: var(--space-3xl);">
+                <h2 class="display-2">Enterprise<br><span class="text-gradient">Technology Stack</span></h2>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-xl);">
+                <div class="card">
+                    <div style="width: 60px; height: 60px; background: rgba(0, 102, 255, 0.1); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-lg);">
+                        <span class="fas fa-brain" style="font-size: 1.5rem; color: var(--primary-300);"></span>
+                    </div>
+                    <h4 style="color: white;">AI/ML Engine</h4>
+                    <p style="color: var(--gray-400); margin: var(--space-sm) 0;">
+                        Real-time anomaly detection using ensemble learning models trained on 500k+ cardiac patterns
+                    </p>
+                </div>
+                
+                <div class="card">
+                    <div style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.1); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-lg);">
+                        <span class="fab fa-java" style="font-size: 1.5rem; color: var(--success);"></span>
+                    </div>
+                    <h4 style="color: white;">Java Logic Core</h4>
+                    <p style="color: var(--gray-400); margin: var(--space-sm) 0;">
+                        Multi-threaded decision engine with context-aware severity classification algorithms
+                    </p>
+                </div>
+                
+                <div class="card">
+                    <div style="width: 60px; height: 60px; background: rgba(239, 68, 68, 0.1); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-lg);">
+                        <span class="fas fa-satellite-dish" style="font-size: 1.5rem; color: var(--danger);"></span>
+                    </div>
+                    <h4 style="color: white;">Real-time Integration</h4>
+                    <p style="color: var(--gray-400); margin: var(--space-sm) 0;">
+                        Seamless integration with Apple HealthKit, Google Fit, and major EMR systems
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section" id="enterprise">
+        <div class="container">
+            <div class="card-glass" style="text-align: center; padding: var(--space-3xl);">
+                <h2 class="display-2" style="margin-bottom: var(--space-lg);">
+                    Ready to Transform<br>
+                    <span class="text-gradient">Cardiac Emergency Response?</span>
+                </h2>
+                
+                <p style="color: var(--gray-300); max-width: 600px; margin: 0 auto var(--space-2xl); font-size: 1.125rem;">
+                    Join leading healthcare providers using HeartBeatGuard to save lives through automated emergency response
+                </p>
+                
+                <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+                    <a href="#contact" class="btn btn-primary" style="padding: var(--space-lg) var(--space-2xl); font-size: 1.125rem;">
+                        <span class="fas fa-calendar-alt"></span>
+                        Schedule Enterprise Demo
+                    </a>
+                    <a href="#dashboard" class="btn btn-secondary" style="padding: var(--space-lg) var(--space-2xl); font-size: 1.125rem;">
+                        <span class="fas fa-file-medical-alt"></span>
+                        View Technical White Paper
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="section" style="background: var(--bg-primary); border-top: 1px solid rgba(255, 255, 255, 0.05);">
+        <div class="container">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-2xl); margin-bottom: var(--space-2xl);">
+                <div>
+                    <a href="#" class="logo" style="font-size: 1.5rem; margin-bottom: var(--space-lg); display: inline-block;">
+                        HeartBeat<span class="text-gradient">Guard</span>
+                    </a>
+                    <p style="color: var(--gray-400);">
+                        Enterprise-grade cardiac emergency response platform powered by AI and real-time analytics.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 style="color: white; margin-bottom: var(--space-lg);">Platform</h4>
+                    <ul style="list-style: none;">
+                        <li><a href="#dashboard" style="color: var(--gray-400); text-decoration: none; display: block; padding: var(--space-xs) 0;">Live Dashboard</a></li>
+                        <li><a href="#technology" style="color: var(--gray-400); text-decoration: none; display: block; padding: var(--space-xs) 0;">Technology</a></li>
+                        <li><a href="#protocols" style="color: var(--gray-400); text-decoration: none; display: block; padding: var(--space-xs) 0;">Protocols</a></li>
+                        <li><a href="#integration" style="color: var(--gray-400); text-decoration: none; display: block; padding: var(--space-xs) 0;">Integration</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 style="color: white; margin-bottom: var(--space-lg);">Enterprise</h4>
+                    <ul style="list-style: none;">
+                        <li><a href="#solutions" style="color: var(--gray-400); text-decoration: none; display: block; padding: var(--space-xs) 0;">Solutions</a></li>
+                        <li><a href="#pricing" style="color: var(--gray-400); text-decoration: none; display: block; padding: var(--space-xs) 0;">Pricing</a></li>
+                        <li><a href="#casestudies" style="color: var(--gray-400); text-decoration: none; display: block; padding: var(--space-xs) 0;">Case Studies</a></li>
+                        <li><a href="#security" style="color: var(--gray-400); text-decoration: none; display: block; padding: var(--space-xs) 0;">Security</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 style="color: white; margin-bottom: var(--space-lg);">Contact</h4>
+                    <ul style="list-style: none;">
+                        <li style="color: var(--gray-400); padding: var(--space-xs) 0;">
+                            <span class="fas fa-envelope" style="margin-right: var(--space-sm);"></span>
+                            enterprise@HeartBeatGuard.com
+                        </li>
+                        <li style="color: var(--gray-400); padding: var(--space-xs) 0;">
+                            <span class="fas fa-phone" style="margin-right: var(--space-sm);"></span>
+                            +91 9133177170                        </li>
+                        <li style="color: var(--gray-400); padding: var(--space-xs) 0;">
+                            <span class="fas fa-map-marker-alt" style="margin-right: var(--space-sm);"></span>
+                            Karimnagar • Hyderabad • India
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: var(--space-xl); text-align: center; color: var(--gray-500);">
+                <p>&copy; 2026 HeartBeatGuard. All rights reserved. | HIPAA Compliant | SOC 2 Type II Certified</p>
+                <p style="font-size: 0.875rem; margin-top: var(--space-sm);">For demonstration purposes only. Not for actual medical use.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============ FIXED JAVASCRIPT - WORKS WITH PYTHON BACKEND ============ -->
+    <script>
+        // Initialize ECG Chart - EXACTLY AS BEFORE
+        const ecgCtx = document.getElementById('liveEcgChart').getContext('2d');
+        const ecgData = [];
+        for (let i = 0; i < 100; i++) {
+            ecgData.push(Math.sin(i * 0.2) * 0.5 + Math.random() * 0.1);
+        }
+
+        const ecgChart = new Chart(ecgCtx, {
+            type: 'line',
+            data: {
+                labels: Array(100).fill(''),
+                datasets: [{
+                    data: ecgData,
+                    borderColor: 'rgba(0, 102, 255, 0.8)',
+                    backgroundColor: 'rgba(0, 102, 255, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { display: false }, y: { display: false } },
+                animation: { duration: 2000, easing: 'linear' }
+            }
+        });
+
+        // Animate ECG
+        function animateECG() {
+            ecgData.push(Math.sin(Date.now() * 0.002) * 0.5 + Math.random() * 0.1);
+            ecgData.shift();
+            ecgChart.update();
+            requestAnimationFrame(animateECG);
+        }
+        animateECG();
+
+        // Header scroll effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // ============ SMARTHEALTH CLIENT - FIXED FOR PYTHON BACKEND ============
+        class SmartHealthClient {
+            constructor() {
+                // Connect to Python backend on port 5000
+                this.serverUrl = 'http://localhost:5000';
+                this.socket = io(this.serverUrl, {
+                    transports: ['websocket'],
+                    reconnection: true,
+                    reconnectionAttempts: 5,
+                    reconnectionDelay: 1000
+                });
+                
+                this.userId = 'demo_user';
+                this.deviceId = 'web_' + Date.now();
+                
+                this.setupSocketEvents();
+                this.setupEventListeners();
+                
+                console.log('✅ HeartBeatGuard Client Ready');
+                console.log('🔌 Connecting to:', this.serverUrl);
+                
+                // Update heart rate display
+                this.updateHeartRateDisplay(72);
+            }
+
+            setupSocketEvents() {
+                this.socket.on('connect', () => {
+                    console.log('✅ Connected to server');
+                    this.addToActivityLog('Connected to health monitor');
+                    
+                    // Send initial heart rate
+                    setTimeout(() => {
+                        const bpm = parseInt(document.getElementById('heartRateSlider').value);
+                        this.sendHeartRate(bpm);
+                    }, 500);
+                });
+
+                this.socket.on('connect_error', (error) => {
+                    console.error('❌ Connection error:', error);
+                    this.addToActivityLog('⚠️ Could not connect to server');
+                });
+
+                this.socket.on('heartrate:analyzed', (data) => {
+                    console.log('📊 Analysis received:', data);
+                    
+                    // Update UI based on severity
+                    this.updateSeverity(data.severity);
+                    this.showResponse(data);
+                    this.updateVitals(data.heartRate);
+                    
+                    // Show/hide protocol panels
+                    if (data.severity === 'critical') {
+                        document.getElementById('protocolCritical').style.display = 'block';
+                        document.getElementById('protocolModerate').style.display = 'none';
+                        document.getElementById('protocolMinor').style.display = 'none';
+                        this.addToActivityLog(`🚨 CRITICAL: Heart rate ${data.heartRate} BPM - Emergency response activated`);
+                    } else if (data.severity === 'moderate') {
+                        document.getElementById('protocolCritical').style.display = 'none';
+                        document.getElementById('protocolModerate').style.display = 'block';
+                        document.getElementById('protocolMinor').style.display = 'none';
+                        this.addToActivityLog(`⚠️ Moderate: Heart rate ${data.heartRate} BPM - Medical consultation suggested`);
+                    } else {
+                        document.getElementById('protocolCritical').style.display = 'none';
+                        document.getElementById('protocolModerate').style.display = 'none';
+                        document.getElementById('protocolMinor').style.display = 'block';
+                        this.addToActivityLog(`✅ Normal: Heart rate ${data.heartRate} BPM`);
+                    }
+                });
+
+                this.socket.on('emergency:activated', (data) => {
+                    console.log('🚨 EMERGENCY:', data);
+                    this.addToActivityLog('🚨 EMERGENCY PROTOCOL ACTIVATED - GPS, Hospitals, Emergency Call');
+                    
+                    // Show emergency modal or highlight
+                    document.getElementById('protocolCritical').style.display = 'block';
+                    
+                    // Flash red effect
+                    document.body.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                    setTimeout(() => {
+                        document.body.style.backgroundColor = '';
+                    }, 500);
+                });
+
+                this.socket.on('location:updated', () => {
+                    this.addToActivityLog('📍 Location shared successfully');
+                });
+
+                this.socket.on('disconnect', () => {
+                    console.log('❌ Disconnected from server');
+                    this.addToActivityLog('⚠️ Disconnected from server - reconnecting...');
+                });
+            }
+
+            sendHeartRate(bpm) {
+                if (this.socket && this.socket.connected) {
+                    this.socket.emit('heartrate:stream', {
+                        bpm: parseInt(bpm),
+                        userId: this.userId,
+                        deviceId: this.deviceId,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    // Update UI immediately
+                    document.getElementById('simHeartRate').textContent = bpm;
+                    document.getElementById('heroHeartRate').textContent = bpm;
+                    document.getElementById('hrValueDisplay').textContent = bpm + ' BPM';
+                    
+                    console.log('❤️ Sent heart rate:', bpm);
+                } else {
+                    console.warn('Socket not connected, using local simulation');
+                    this.simulateLocalAnalysis(bpm);
+                }
+            }
+
+            // Fallback if server not available
+            simulateLocalAnalysis(bpm) {
+                let severity = 'normal';
+                if (bpm < 60 || bpm > 140) severity = 'critical';
+                else if (bpm > 100) severity = 'moderate';
+                
+                const data = {
+                    severity: severity,
+                    heartRate: bpm,
+                    message: severity === 'critical' ? 'Emergency response needed' : 
+                            severity === 'moderate' ? 'Elevated heart rate' : 'Heart rate normal'
+                };
+                
+                this.updateSeverity(severity);
+                this.showResponse(data);
+                this.updateVitals(bpm);
+                
+                if (severity === 'critical') {
+                    document.getElementById('protocolCritical').style.display = 'block';
+                    this.addToActivityLog(`🚨 LOCAL: Critical heart rate ${bpm} BPM`);
+                } else if (severity === 'moderate') {
+                    document.getElementById('protocolModerate').style.display = 'block';
+                    this.addToActivityLog(`⚠️ LOCAL: Moderate heart rate ${bpm} BPM`);
+                } else {
+                    document.getElementById('protocolMinor').style.display = 'block';
+                    this.addToActivityLog(`✅ LOCAL: Normal heart rate ${bpm} BPM`);
+                }
+            }
+
+            updateSeverity(severity) {
+                const pill = document.getElementById('currentSeverity');
+                const heroPill = document.getElementById('heroSeverity');
+                
+                if (severity === 'critical') {
+                    pill.className = 'severity-pill severity-critical active';
+                    pill.innerHTML = '<span class="fas fa-heart"></span><span>Status: Critical</span>';
+                    if (heroPill) {
+                        heroPill.className = 'severity-pill severity-critical';
+                        heroPill.innerHTML = '<span class="fas fa-exclamation-triangle"></span><span>Critical</span>';
+                    }
+                } else if (severity === 'moderate') {
+                    pill.className = 'severity-pill severity-moderate active';
+                    pill.innerHTML = '<span class="fas fa-heart"></span><span>Status: Elevated</span>';
+                    if (heroPill) {
+                        heroPill.className = 'severity-pill severity-moderate';
+                        heroPill.innerHTML = '<span class="fas fa-exclamation-triangle"></span><span>Elevated</span>';
+                    }
+                } else {
+                    pill.className = 'severity-pill severity-minor active';
+                    pill.innerHTML = '<span class="fas fa-heart"></span><span>Status: Normal</span>';
+                    if (heroPill) {
+                        heroPill.className = 'severity-pill severity-minor';
+                        heroPill.innerHTML = '<span class="fas fa-check-circle"></span><span>Stable</span>';
+                    }
+                }
+            }
+
+            showResponse(data) {
+                const container = document.getElementById('responseContainer');
+                
+                if (data.severity === 'critical') {
+                    container.innerHTML = `
+                        <div style="background: rgba(239, 68, 68, 0.1); border-radius: var(--radius-lg); padding: var(--space-xl); border-left: 4px solid var(--danger);">
+                            <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-md);">
+                                <span class="fas fa-ambulance" style="color: var(--danger); font-size: 1.5rem;"></span>
+                                <h5 style="color: white; margin: 0;">CRITICAL HEART RATE DETECTED</h5>
+                            </div>
+                            <p style="color: var(--gray-300); margin-bottom: var(--space-md);">
+                                ${data.message || 'Severe cardiac abnormality detected! Emergency response protocol activated.'}
+                            </p>
+                            <div style="background: rgba(255, 255, 255, 0.05); padding: var(--space-md); border-radius: var(--radius-md);">
+                                <div style="color: var(--danger); font-weight: 600; margin-bottom: var(--space-sm);">EMERGENCY PROTOCOL ACTIVATED:</div>
+                                <ul style="color: var(--gray-300); padding-left: var(--space-lg);">
+                                    <li><strong>1.</strong> Acquiring GPS location</li>
+                                    <li><strong>2.</strong> Identifying nearest hospitals</li>
+                                    <li><strong>3.</strong> Auto-dialing emergency services (108)</li>
+                                    <li><strong>4.</strong> Alerting emergency contacts</li>
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                } else if (data.severity === 'moderate') {
+                    container.innerHTML = `
+                        <div style="background: rgba(245, 158, 11, 0.1); border-radius: var(--radius-lg); padding: var(--space-xl); border-left: 4px solid var(--warning);">
+                            <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-md);">
+                                <span class="fas fa-exclamation-triangle" style="color: var(--warning); font-size: 1.5rem;"></span>
+                                <h5 style="color: white; margin: 0;">Abnormal Heart Rate Detected</h5>
+                            </div>
+                            <p style="color: var(--gray-300); margin-bottom: var(--space-md);">
+                                ${data.message || 'Elevated heart rate detected. Medical consultation recommended.'}
+                            </p>
+                            <div style="background: rgba(255, 255, 255, 0.05); padding: var(--space-md); border-radius: var(--radius-md);">
+                                <div style="color: var(--warning); font-weight: 600; margin-bottom: var(--space-sm);">Actions Initiated:</div>
+                                <ul style="color: var(--gray-300); padding-left: var(--space-lg);">
+                                    <li>Requesting user context (symptoms, activity)</li>
+                                    <li>Preparing doctor visit recommendation</li>
+                                    <li>Schedule follow-up monitoring</li>
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div style="background: rgba(16, 185, 129, 0.1); border-radius: var(--radius-lg); padding: var(--space-xl); border-left: 4px solid var(--success);">
+                            <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-md);">
+                                <span class="fas fa-check-circle" style="color: var(--success); font-size: 1.5rem;"></span>
+                                <h5 style="color: white; margin: 0;">Normal Heart Rate Detected</h5>
+                            </div>
+                            <p style="color: var(--gray-300); margin-bottom: var(--space-md);">
+                                ${data.message || 'Heart rate is within normal range. System continuing monitoring.'}
+                            </p>
+                            <div style="background: rgba(255, 255, 255, 0.05); padding: var(--space-md); border-radius: var(--radius-md);">
+                                <div style="color: var(--success); font-weight: 600; margin-bottom: var(--space-sm);">Action Taken:</div>
+                                <ul style="color: var(--gray-300); padding-left: var(--space-lg);">
+                                    <li>Continue continuous monitoring</li>
+                                    <li>Store data for trend analysis</li>
+                                    <li>No immediate action required</li>
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            updateVitals(heartRate) {
+                // Update blood pressure and oxygen based on heart rate
+                const bpElement = document.getElementById('simBP');
+                const oxygenElement = document.getElementById('simOxygen');
+                
+                if (heartRate < 60) {
+                    bpElement.textContent = '90/60';
+                    oxygenElement.textContent = '94%';
+                    oxygenElement.style.color = 'var(--warning)';
+                } else if (heartRate <= 100) {
+                    bpElement.textContent = '120/80';
+                    oxygenElement.textContent = '98%';
+                    oxygenElement.style.color = 'var(--success)';
+                } else if (heartRate <= 120) {
+                    bpElement.textContent = '140/90';
+                    oxygenElement.textContent = '96%';
+                    oxygenElement.style.color = 'var(--warning)';
+                } else {
+                    bpElement.textContent = '160/100';
+                    oxygenElement.textContent = '92%';
+                    oxygenElement.style.color = 'var(--danger)';
+                }
+            }
+
+            updateHeartRateDisplay(bpm) {
+                document.getElementById('simHeartRate').textContent = bpm;
+                document.getElementById('heroHeartRate').textContent = bpm;
+                document.getElementById('hrValueDisplay').textContent = bpm + ' BPM';
+            }
+
+            setupEventListeners() {
+                // Heart rate slider
+                const slider = document.getElementById('heartRateSlider');
+                if (slider) {
+                    slider.addEventListener('input', (e) => {
+                        const value = parseInt(e.target.value);
+                        document.getElementById('hrValueDisplay').textContent = value + ' BPM';
+                        document.getElementById('simHeartRate').textContent = value;
+                        document.getElementById('heroHeartRate').textContent = value;
+                    });
+                }
+
+                // Simulate button
+                const simulateBtn = document.getElementById('simulateBtn');
+                if (simulateBtn) {
+                    simulateBtn.addEventListener('click', () => {
+                        const bpm = parseInt(document.getElementById('heartRateSlider').value);
+                        this.sendHeartRate(bpm);
+                        this.addToActivityLog(`Analysis requested: ${bpm} BPM`);
+                    });
+                }
+
+                // Scenario buttons
+                document.querySelectorAll('[data-hr]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const bpm = parseInt(e.target.getAttribute('data-hr'));
+                        document.getElementById('heartRateSlider').value = bpm;
+                        document.getElementById('hrValueDisplay').textContent = bpm + ' BPM';
+                        this.sendHeartRate(bpm);
+                        this.addToActivityLog(`Scenario selected: ${e.target.textContent} (${bpm} BPM)`);
+                    });
+                });
+            }
+
+            addToActivityLog(message) {
+                const log = document.getElementById('activityLog');
+                if (!log) return;
+                
+                const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                const entry = document.createElement('div');
+                entry.style.cssText = 'color: var(--gray-400); font-size: 0.875rem; padding: var(--space-sm); border-bottom: 1px solid rgba(255, 255, 255, 0.05);';
+                entry.innerHTML = `<span style="color: var(--primary-300);">[${timestamp}]</span> ${message}`;
+                log.prepend(entry);
+                
+                // Keep only last 10 entries
+                if (log.children.length > 10) {
+                    log.removeChild(log.lastChild);
+                }
+            }
+        }
+
+        // ============ INITIALIZE EVERYTHING ============
+        let client;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize the client
+            client = new SmartHealthClient();
+            window.client = client;
+            
+            // Add initial log entry
+            setTimeout(() => {
+                client.addToActivityLog('🚀 HeartBeatGuard ready');
+                client.addToActivityLog('💡 Click "Run Cardiac Analysis" to test');
+            }, 100);
+            
+            console.log('🎯 Application initialized');
+        });
+    </script>
+</body>
+</html>
